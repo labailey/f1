@@ -13,6 +13,7 @@
   },
   "races": [
     { "name": "Monza", "results": { "levi": null, "jahrel": 5, "ian": null, "reef": null } },
-    { "name": "Silverstone", "results": { "levi": null, "jahrel": null, "ian": null, "reef": null } }
+    { "name": "Silverstone", "results": { "levi": 5, "jahrel": null, "ian": 6, "reef": 8 } },
+    { "name": "Shanghai", "results": { "levi": 9, "jahrel": null, "ian": 8, "reef": 10 } }
   ]
 }
