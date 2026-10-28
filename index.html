@@ -229,7 +229,8 @@ function render() {
     </div>`).join("");
 
   // Drivers
-  const ids = driverIds().sort((a, b) => d[b].pts - d[a].pts || d[b].wins - d[a].wins);
+  // ties go to the better best finish, like F1 countback
+  const ids = driverIds().sort((a, b) => d[b].pts - d[a].pts || d[b].wins - d[a].wins || (d[a].best || 99) - (d[b].best || 99));
   const top = d[ids[0]].pts;
   $("drivers").innerHTML = `
     <tr><th>Pos</th><th>Driver</th><th class="num">Wins</th><th class="num">Podiums</th><th class="num">Best</th><th class="num">Pts</th></tr>
@@ -242,7 +243,7 @@ function render() {
         <td class="num">${d[id].podiums}</td>
         <td class="num">${d[id].best ? "P" + d[id].best : "–"}</td>
         <td class="num"><span class="big">${d[id].pts}</span>
-          ${i > 0 ? `<div class="gap">-${top - d[id].pts}</div>` : ""}</td>
+          ${top > d[id].pts ? `<div class="gap">-${top - d[id].pts}</div>` : ""}</td>
       </tr>`).join("")}`;
 
   // Race grid
