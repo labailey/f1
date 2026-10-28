@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>F1 Championship</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d12;
+    --panel: #17171f;
+    --panel-2: #20202b;
+    --line: #2c2c3a;
+    --text: #f2f2f5;
+    --muted: #8d8d9e;
+    --accent: #e10600;
+    --gold: #f5c542;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Titillium Web", system-ui, sans-serif;
+    line-height: 1.4;
+  }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 0 16px 64px; }
+  header {
+    border-bottom: 3px solid var(--accent);
+    background: linear-gradient(90deg, #1a0000, var(--bg) 60%);
+    margin-bottom: 24px;
+  }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; padding: 18px 16px; gap: 12px; }
+  h1 { margin: 0; font-weight: 900; font-style: italic; letter-spacing: .5px; font-size: clamp(22px, 5vw, 32px); text-transform: uppercase; }
+  h1 span { color: var(--accent); }
+  h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 2px; color: var(--muted); margin: 32px 0 12px; font-weight: 700; }
+  button {
+    font: inherit; font-weight: 700; cursor: pointer; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--panel-2); color: var(--text);
+    padding: 8px 14px;
+  }
+  button:hover { border-color: var(--muted); }
+  button.primary { background: var(--accent); border-color: var(--accent); }
+  button.danger { color: #ff6b6b; }
+
+  .teams { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .team {
+    background: var(--panel); border-radius: 10px; padding: 16px;
+    border-left: 6px solid var(--c); position: relative; overflow: hidden;
+  }
+  .team .pos { position: absolute; right: 14px; top: 6px; font-size: 54px; font-weight: 900; font-style: italic; opacity: .12; }
+  .team .name { font-weight: 900; font-size: 20px; text-transform: uppercase; font-style: italic; }
+  .team .pts { font-size: 38px; font-weight: 900; line-height: 1; margin: 6px 0 10px; }
+  .team .pts small { font-size: 14px; color: var(--muted); font-weight: 600; margin-left: 4px; }
+  .team .drv { display: flex; justify-content: space-between; color: var(--muted); font-size: 15px; }
+  .team .drv b { color: var(--text); }
+  .team.leader .name::after { content: " 👑"; font-style: normal; }
+
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 10px; overflow: hidden; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); background: var(--panel-2); font-weight: 700; }
+  tr:last-child td { border-bottom: 0; }
+  td.num, th.num { text-align: right; }
+  .p1 td:first-child { color: var(--gold); }
+  .bar { display: inline-block; width: 4px; height: 18px; border-radius: 2px; background: var(--c); vertical-align: middle; margin-right: 10px; }
+  .big { font-weight: 900; font-size: 18px; }
+  .gap { color: var(--muted); font-size: 13px; }
+  .scroll { overflow-x: auto; border-radius: 10px; }
+
+  .chip { display: inline-block; min-width: 46px; text-align: center; padding: 2px 6px; border-radius: 4px; background: var(--panel-2); font-weight: 700; font-size: 14px; }
+  .chip.pts { background: color-mix(in srgb, var(--c) 30%, var(--panel-2)); }
+  .chip.win { background: var(--gold); color: #000; }
+  .chip.none { color: var(--muted); background: transparent; }
+  .chip small { font-weight: 400; opacity: .75; margin-left: 3px; }
+
+  .chart { background: var(--panel); border-radius: 10px; padding: 12px; }
+  .chart svg { width: 100%; height: auto; display: block; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; font-size: 14px; margin-top: 6px; color: var(--muted); }
+  .legend i { display: inline-block; width: 14px; height: 3px; vertical-align: middle; margin-right: 6px; }
+
+  .empty { color: var(--muted); padding: 24px; text-align: center; background: var(--panel); border-radius: 10px; }
+
+  /* editor */
+  dialog { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 12px; padding: 0; width: min(560px, calc(100vw - 32px)); }
+  dialog::backdrop { background: rgba(0,0,0,.7); }
+  .dlg-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .dlg-head h3 { margin: 0; font-style: italic; text-transform: uppercase; }
+  .dlg-body { padding: 16px 20px; max-height: 70vh; overflow-y: auto; }
+  .dlg-foot { padding: 12px 20px; border-top: 1px solid var(--line); display: flex; gap: 8px; justify-content: flex-end; flex-wrap: wrap; }
+  label { display: block; font-size: 13px; color: var(--muted); margin: 12px 0 4px; text-transform: uppercase; letter-spacing: 1px; }
+  input, select { width: 100%; font: inherit; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0 12px; }
+  .race-list { display: flex; flex-direction: column; gap: 6px; }
+  .race-row { display: flex; align-items: center; justify-content: space-between; background: var(--panel-2); padding: 6px 6px 6px 12px; border-radius: 6px; gap: 6px; }
+  .race-row span { flex: 1; font-weight: 700; }
+  .race-row button { padding: 4px 10px; font-size: 13px; }
+  .note { font-size: 13px; color: var(--muted); }
+  .note a { color: var(--text); }
+  .status { font-size: 14px; margin-right: auto; align-self: center; }
+  .status.err { color: #ff6b6b; }
+  .status.ok { color: #6bff9b; }
+
+  @media (max-width: 560px) {
+    .teams { grid-template-columns: 1fr; }
+    th, td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1><span>F1</span> Championship</h1>
+    <button id="editBtn">✏️ Edit</button>
+  </div>
+</header>
+
+<main class="wrap">
+  <h2>Constructors</h2>
+  <div class="teams" id="teams"></div>
+
+  <h2>Drivers</h2>
+  <div class="scroll"><table id="drivers"></table></div>
+
+  <h2>Race results</h2>
+  <div class="scroll" id="racesWrap"><table id="races"></table></div>
+
+  <h2>Points progression</h2>
+  <div class="chart" id="chart"></div>
+</main>
+
+<dialog id="editor">
+  <div class="dlg-head">
+    <h3 id="dlgTitle">Add race</h3>
+    <button id="closeBtn" aria-label="Close">✕</button>
+  </div>
+  <div class="dlg-body">
+    <label for="raceName">Track</label>
+    <input id="raceName" placeholder="e.g. Spa" list="tracks">
+    <datalist id="tracks"></datalist>
+    <div class="grid2" id="posInputs"></div>
+
+    <h2 style="margin-top:24px">Saved races</h2>
+    <div class="race-list" id="raceList"></div>
+
+    <h2 style="margin-top:24px">GitHub token</h2>
+    <p class="note">Saving writes to <code>data.json</code> in the repo so everyone sees it. Paste a
+      <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">fine-grained token</a>
+      with <b>Contents: Read and write</b> on this repo only. It's stored just in this browser.</p>
+    <input id="token" type="password" placeholder="github_pat_…" autocomplete="off">
+  </div>
+  <div class="dlg-foot">
+    <span class="status" id="status"></span>
+    <button id="newBtn">New race</button>
+    <button id="saveBtn" class="primary">Save race</button>
+  </div>
+</dialog>
+
+<script>
+const REPO = "labailey/f1";
+const FILE = "data.json";
+const TRACKS = ["Bahrain","Jeddah","Melbourne","Suzuka","Shanghai","Miami","Imola","Monaco","Barcelona","Montreal",
+  "Spielberg","Silverstone","Hungaroring","Spa","Zandvoort","Monza","Baku","Singapore","Austin","Mexico City",
+  "Interlagos","Las Vegas","Qatar","Abu Dhabi"];
+
+let data = null;
+let sha = null;          // current file sha from the API, needed to commit
+let editing = -1;        // index of race being edited, -1 = new
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const pointsFor = pos => (pos && data.points[pos - 1]) || 0;
+const teamOf = id => data.teams.find(t => t.drivers.includes(id));
+const driverIds = () => data.teams.flatMap(t => t.drivers);
+
+function store(key, val) {
+  try { localStorage.setItem(key, val); } catch {}
+}
+function load(key) { try { return localStorage.getItem(key) || ""; } catch { return ""; } }
+
+function b64decode(s) { return new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g, "")), c => c.charCodeAt(0))); }
+function b64encode(s) { return btoa(String.fromCharCode(...new TextEncoder().encode(s))); }
+
+// Read through the GitHub API so updates show instantly (Pages caches for a few minutes).
+async function fetchData() {
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}?t=${Date.now()}`, { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    sha = j.sha;
+    return JSON.parse(b64decode(j.content));
+  } catch {
+    const r = await fetch(`${FILE}?t=${Date.now()}`, { cache: "no-store" });
+    return r.json();
+  }
+}
+
+function totals() {
+  const d = {};
+  for (const id of driverIds()) d[id] = { pts: 0, wins: 0, podiums: 0, best: null, history: [0] };
+  for (const race of data.races) {
+    for (const id of driverIds()) {
+      const pos = race.results[id];
+      const p = pointsFor(pos);
+      d[id].pts += p;
+      if (pos === 1) d[id].wins++;
+      if (pos && pos <= 3) d[id].podiums++;
+      if (pos && (d[id].best === null || pos < d[id].best)) d[id].best = pos;
+      d[id].history.push(d[id].pts);
+    }
+  }
+  return d;
+}
+
+function render() {
+  document.title = data.title;
+  const d = totals();
+  const teamPts = t => t.drivers.reduce((s, id) => s + d[id].pts, 0);
+
+  // Constructors
+  const teams = [...data.teams].sort((a, b) => teamPts(b) - teamPts(a));
+  const leaderPts = teamPts(teams[0]);
+  $("teams").innerHTML = teams.map((t, i) => `
+    <div class="team ${i === 0 && leaderPts > teamPts(teams[1] || {drivers:[]}) ? "leader" : ""}" style="--c:${t.color}">
+      <div class="pos">P${i + 1}</div>
+      <div class="name">${esc(t.name)}</div>
+      <div class="pts">${teamPts(t)}<small>PTS</small></div>
+      ${t.drivers.map(id => `<div class="drv"><span>${esc(data.drivers[id].name)}</span><b>${d[id].pts}</b></div>`).join("")}
+    </div>`).join("");
+
+  // Drivers
+  const ids = driverIds().sort((a, b) => d[b].pts - d[a].pts || d[b].wins - d[a].wins);
+  const top = d[ids[0]].pts;
+  $("drivers").innerHTML = `
+    <tr><th>Pos</th><th>Driver</th><th class="num">Wins</th><th class="num">Podiums</th><th class="num">Best</th><th class="num">Pts</th></tr>
+    ${ids.map((id, i) => `
+      <tr class="${i === 0 && top > 0 ? "p1" : ""}">
+        <td class="big">${i + 1}</td>
+        <td><span class="bar" style="--c:${teamOf(id).color}"></span><b>${esc(data.drivers[id].name)}</b>
+          <span class="gap">${esc(teamOf(id).name)}</span></td>
+        <td class="num">${d[id].wins}</td>
+        <td class="num">${d[id].podiums}</td>
+        <td class="num">${d[id].best ? "P" + d[id].best : "–"}</td>
+        <td class="num"><span class="big">${d[id].pts}</span>
+          ${i > 0 ? `<div class="gap">-${top - d[id].pts}</div>` : ""}</td>
+      </tr>`).join("")}`;
+
+  // Race grid
+  if (!data.races.length) {
+    $("racesWrap").innerHTML = `<div class="empty">No races yet. Hit Edit to add one.</div>`;
+  } else {
+    const order = driverIds();
+    $("racesWrap").innerHTML = `<table>
+      <tr><th>#</th><th>Track</th>${order.map(id => `<th class="num">${esc(data.drivers[id].name)}</th>`).join("")}</tr>
+      ${data.races.map((race, i) => `
+        <tr><td class="gap">${i + 1}</td><td><b>${esc(race.name)}</b></td>
+        ${order.map(id => {
+          const pos = race.results[id], p = pointsFor(pos);
+          const cls = pos === 1 ? "win" : p ? "pts" : "none";
+          return `<td class="num"><span class="chip ${cls}" style="--c:${teamOf(id).color}">${pos ? "P" + pos : "–"}${p ? `<small>+${p}</small>` : ""}</span></td>`;
+        }).join("")}</tr>`).join("")}
+    </table>`;
+  }
+
+  renderChart(d);
+}
+
+function renderChart(d) {
+  const ids = driverIds();
+  const n = data.races.length;
+  if (!n) { $("chart").innerHTML = `<div class="note" style="text-align:center;padding:20px">Chart appears after the first race.</div>`; return; }
+  const W = 800, H = 300, L = 40, R = 20, T = 16, B = 40;
+  const max = Math.max(10, ...ids.map(id => d[id].pts));
+  const x = i => L + (W - L - R) * (i / n);
+  const y = v => H - B - (H - T - B) * (v / max);
+  // second driver of each team gets a dashed line so teammates are distinguishable
+  const dash = id => teamOf(id).drivers.indexOf(id) === 1 ? "6 5" : "";
+  const step = Math.max(1, Math.ceil(max / 5 / 5) * 5);
+  let grid = "";
+  for (let v = 0; v <= max; v += step) grid += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="#2c2c3a"/><text x="${L - 8}" y="${y(v) + 4}" fill="#8d8d9e" font-size="12" text-anchor="end">${v}</text>`;
+  const labels = ["Start", ...data.races.map(r => r.name)].map((name, i) =>
+    `<text x="${x(i)}" y="${H - B + 20}" fill="#8d8d9e" font-size="12" text-anchor="middle">${esc(name.slice(0, 10))}</text>`).join("");
+  const lines = ids.map(id => {
+    const pts = d[id].history.map((v, i) => `${x(i)},${y(v)}`).join(" ");
+    return `<polyline points="${pts}" fill="none" stroke="${teamOf(id).color}" stroke-width="3" stroke-dasharray="${dash(id)}" stroke-linejoin="round"/>` +
+      `<circle cx="${x(n)}" cy="${y(d[id].pts)}" r="4" fill="${teamOf(id).color}"/>`;
+  }).join("");
+  $("chart").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cumulative points by race">${grid}${labels}${lines}</svg>
+    <div class="legend">${ids.map(id => `<span><i style="background:${teamOf(id).color};${dash(id) ? "background:repeating-linear-gradient(90deg," + teamOf(id).color + " 0 4px,transparent 4px 7px)" : ""}"></i>${esc(data.drivers[id].name)}</span>`).join("")}</div>`;
+}
+
+// ---------- editor ----------
+function posOptions(sel) {
+  let o = `<option value="">No points / DNF</option>`;
+  for (let p = 1; p <= 20; p++) o += `<option value="${p}" ${sel === p ? "selected" : ""}>P${p}${data.points[p - 1] ? ` (+${data.points[p - 1]})` : ""}</option>`;
+  return o;
+}
+
+function fillForm(i) {
+  editing = i;
+  const race = data.races[i] || { name: "", results: {} };
+  $("dlgTitle").textContent = i < 0 ? "Add race" : "Edit " + race.name;
+  $("saveBtn").textContent = i < 0 ? "Add race" : "Save changes";
+  $("raceName").value = race.name;
+  $("posInputs").innerHTML = driverIds().map(id => `
+    <div><label for="pos-${id}">${esc(data.drivers[id].name)}</label>
+    <select id="pos-${id}">${posOptions(race.results[id] ?? null)}</select></div>`).join("");
+  $("raceList").innerHTML = data.races.length ? data.races.map((r, j) => `
+    <div class="race-row"><span>${j + 1}. ${esc(r.name)}</span>
+      <button data-edit="${j}">Edit</button><button class="danger" data-del="${j}">Delete</button></div>`).join("")
+    : `<div class="note">None yet.</div>`;
+  setStatus("");
+}
+
+function setStatus(msg, kind = "") { $("status").textContent = msg; $("status").className = "status " + kind; }
+
+async function commit(next, message) {
+  const token = $("token").value.trim();
+  if (!token) throw new Error("Paste a GitHub token first.");
+  store("f1-token", token);
+  const headers = { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" };
+  if (!sha) {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`, { headers, cache: "no-store" });
+    if (r.ok) sha = (await r.json()).sha;
+  }
+  const r = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`, {
+    method: "PUT", headers,
+    body: JSON.stringify({ message, sha, content: b64encode(JSON.stringify(next, null, 2) + "\n") })
+  });
+  const j = await r.json();
+  if (r.status === 409) { sha = null; throw new Error("Someone else just saved. Close and reopen to refresh."); }
+  if (!r.ok) throw new Error(j.message || "Save failed (" + r.status + ")");
+  sha = j.content.sha;
+  data = next;
+  render();
+}
+
+async function save() {
+  const name = $("raceName").value.trim();
+  if (!name) return setStatus("Enter a track name.", "err");
+  const results = {};
+  for (const id of driverIds()) { const v = $("pos-" + id).value; results[id] = v ? Number(v) : null; }
+  const used = Object.values(results).filter(Boolean);
+  if (new Set(used).size !== used.length) return setStatus("Two drivers can't share a position.", "err");
+  const next = structuredClone(data);
+  if (editing < 0) next.races.push({ name, results }); else next.races[editing] = { name, results };
+  setStatus("Saving…");
+  try {
+    await commit(next, `${editing < 0 ? "Add" : "Update"} ${name} results`);
+    fillForm(-1);
+    setStatus("Saved ✓", "ok");
+  } catch (e) { setStatus(e.message, "err"); }
+}
+
+async function del(i) {
+  if (!confirm(`Delete ${data.races[i].name}?`)) return;
+  const next = structuredClone(data);
+  const [gone] = next.races.splice(i, 1);
+  setStatus("Deleting…");
+  try { await commit(next, `Remove ${gone.name}`); fillForm(-1); setStatus("Deleted ✓", "ok"); }
+  catch (e) { setStatus(e.message, "err"); }
+}
+
+$("tracks").innerHTML = TRACKS.map(t => `<option value="${t}">`).join("");
+$("editBtn").onclick = () => { fillForm(-1); $("token").value = load("f1-token"); $("editor").showModal(); };
+$("closeBtn").onclick = () => $("editor").close();
+$("newBtn").onclick = () => fillForm(-1);
+$("saveBtn").onclick = save;
+$("raceList").onclick = e => {
+  if (e.target.dataset.edit) fillForm(Number(e.target.dataset.edit));
+  if (e.target.dataset.del) del(Number(e.target.dataset.del));
+};
+
+fetchData().then(j => { data = j; render(); })
+  .catch(() => { document.querySelector("main").innerHTML = `<div class="empty">Couldn't load data.json</div>`; });
+</script>
+</body>
+</html>

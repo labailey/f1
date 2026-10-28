@@ -1,0 +1,18 @@
+{
+  "title": "F1 Championship",
+  "points": [25, 18, 15, 12, 10, 8, 6, 4, 2, 1],
+  "teams": [
+    { "id": "redbull", "name": "Red Bull", "color": "#3671C6", "drivers": ["ian", "levi"] },
+    { "id": "ferrari", "name": "Ferrari", "color": "#E8002D", "drivers": ["jahrel", "reef"] }
+  ],
+  "drivers": {
+    "ian": { "name": "Ian" },
+    "levi": { "name": "Levi" },
+    "jahrel": { "name": "Jahrel" },
+    "reef": { "name": "Reef" }
+  },
+  "races": [
+    { "name": "Monza", "results": { "levi": null, "jahrel": 5, "ian": null, "reef": null } },
+    { "name": "Silverstone", "results": { "levi": null, "jahrel": null, "ian": null, "reef": null } }
+  ]
+}
